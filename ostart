@@ -1,4 +1,0 @@
-#!/bin/bash
-
-g++ main.cpp -leggx -lX11 -lm -o o
-./o<in>data.xyz

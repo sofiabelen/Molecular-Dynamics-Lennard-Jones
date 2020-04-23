@@ -1,6 +1,4 @@
 #include <bits/stdc++.h>
-#include <iostream>
-#include <fstream>
 #include <math.h>
 #include <time.h>
 #include <stdlib.h>
@@ -8,14 +6,10 @@
 
 using namespace std;
 
-int Lx,Ly,Lz,win,m,counter,border,border2,N;
-int n,win2,l_hist,d,h_frames,wait_time,M,n0,ntime;
-double kinetic,potential,lx,ly,lz,mult,dt,density,pressure;
-double vir_sum,v_max,temperature,vx_max,v_range,disp;
+int Lx,Ly,Lz,win,m,counter,border,border2,N,n,win2,l_hist,d,h_frames,wait_time;
+double kinetic,kinetic0,potential,potential0,lx,ly,lz,mult,dt,density,pressure,vir_sum,v_max,temperature;
 vector<int> x_vel;
-vector<double> total_energy;
 string bglight,bgdark,accent,primary,divider,darkprimary,light;
-ofstream energy,velocity,positions;
 
 struct vec
 {
@@ -139,15 +133,9 @@ double len_sq(vec a)
 }
 void histogram()
 {
-    //x axis: v*v
-    //vx_max=vx_max*vx_max;
-    //for(int j=0;j<d;j++)
-    //    x_vel[j]=x_vel[j]*x_vel[j];
-
     double h=double(l_hist)/double(d);
     double h_max=0;
     double dv=v_max/double(d-1);
-    //double dv=vx_max/double(d-1);
 
     for(int j=0;j<d;j++)
         x_vel[j]=0;
@@ -155,8 +143,6 @@ void histogram()
         x_vel[int(sqrt(len_sq(vel[i]))/dv)]++;
     for(int j=0;j<d;j++)
         h_max=max(int(h_max),x_vel[j]);
-    //for(int j=0;j<d;j++)
-    //    x_vel[j]=log(x_vel[j]);
 
     gclr(win2);
     newcolor(win2,primary.c_str());
@@ -195,55 +181,30 @@ void init_graphic()
     layer(win2,0,1);
 }
 
-void energy_eval()
+void energy()
 {
     double v_sum=0;
     double vv_sum=0;
     v_max=0;
-    vx_max=0;
     for(int i=0;i<n;i++)
     {
         vv_sum+=len_sq(vel[i]);
         v_sum+=sqrt(len_sq(vel[i]));
         v_max=max(v_max,sqrt(len_sq(vel[i])));
-        vx_max=max(vx_max,vel[i].x);
     }
-    //temperature=(1.0/(n))*vv_sum;
-    //pressure=density*(vv_sum+vir_sum)/(double(n)*lx*ly*lz);
-    //kinetic=vv_sum/(2.0);
-
     temperature=(1.0/(3.0*n))*vv_sum;
+    pressure=density*(vv_sum+vir_sum)/(double(n)*lx*ly*lz);
     kinetic=vv_sum/(2.0*double(n));
     potential/=n;
-    total_energy.push_back(kinetic+potential);
-
-    double sum=0;
-    for(int j=0;j<total_energy.size();j++)
-    {
-        sum+=total_energy[j];
-    }
-
-    double avg=sum/double(total_energy.size());
-    double diff_sq=0;
-
-    for(int j=0;j<total_energy.size();j++)
-    {
-        diff_sq+=(avg-total_energy[j])*(avg-total_energy[j]);
-    }
-
-    disp=diff_sq/double(total_energy.size()-1);
 }
 
 void parameters()
 {
     scanf("%d",&n);
-    scanf("%d",&M);
     scanf("%d",&N);
     scanf("%lf",&dt);
     scanf("%lf",&density);
-    scanf("%lf",&v_range);
-    scanf("%d",&n0);
-    scanf("%d",&ntime);
+    scanf("%lf",&temperature);
     scanf("%d",&Lx);
     scanf("%d",&border);
     scanf("%d",&l_hist);
@@ -275,30 +236,14 @@ void colors()
     divider="#BDBDBD";
     darkprimary="#212121";
 }
-void outVel()
+
+void init()
 {
-    for(int i=0;i<n;i++)
-        velocity<<vel[i].x<<" ";
-    velocity<<endl;
-    for(int i=0;i<n;i++)
-        velocity<<vel[i].y<<" ";
-    velocity<<endl;
-    for(int i=0;i<n;i++)
-        velocity<<vel[i].z<<" ";
-    velocity<<endl;
-}
-void outPos()
-{
-    for(int i=0;i<n;i++)
-        positions<<pos[i].x<<" "<<pos[i].y<<" "<<pos[i].z<<endl;
-        //cout<<pos[i].x<<" "<<pos[i].y<<" "<<pos[i].z<<endl;
-}
-void init_sim()
-{
-    total_energy.clear();
-    counter=0;
+    colors();
+    parameters();
     m=int(pow(double(n),1.0/3.0));
     if(m*m*m < n)m++;
+    //printf("m=%d n=%d %f\n",m,n,pow(double(n),1.0/3.0));
     
     double dx=lx/double(m);
     double dy=ly/double(m);
@@ -307,7 +252,7 @@ void init_sim()
     int u=0;
     int i=0;
     double pi=4*atan(1.0);
-    //double v_range=sqrt(3*temperature);
+    double v_range=sqrt(3*temperature);
 
     for(int i=0;i<m;i++)
     {
@@ -319,9 +264,9 @@ void init_sim()
             {
                 if(u>=n)break;
                 //Random initial positions on a lattice
-                pos[u].x=randomRange((double(i)+0.2)*dx,(double(i)+0.8)*dx);
-                pos[u].y=randomRange((double(j)+0.2)*dy,(double(j)+0.8)*dy);
-                pos[u].z=randomRange((double(k)+0.2)*dz,(double(k)+0.8)*dz);
+                pos[u].x=randomRange((double(i)+0.4)*dx,(double(i)+0.6)*dx);
+                pos[u].y=randomRange((double(j)+0.4)*dy,(double(j)+0.6)*dy);
+                pos[u].z=randomRange((double(k)+0.4)*dz,(double(k)+0.6)*dz);
 
                 // Random initial velocities on a cube
                 //vel[u].x=randomRange(0.00001,0.001);
@@ -343,17 +288,9 @@ void init_sim()
             }
         }
     }
-}
-void init()
-{
-    srand(time(NULL));
-    energy.open("energy");
-    velocity.open("velocity");
-    positions.open("positions");
-    colors();
-    parameters();
-    velocity<<n<<" "<<M<<" "<<d<<endl;
-    positions<<n<<" "<<ntime<<" "<<dt<<endl;
+    energy();
+    kinetic0=kinetic;
+    potential0=potential;
 
     mv[0]=vecSet(-lx,0,0);
     mv[1]=vecSet(-lx,ly,0);
@@ -471,44 +408,43 @@ void ovito()
     for(int i=0;i<n;i++)
         printf("%f %f %f\n",pos[i].x,pos[i].y,pos[i].z);
 }
+float maxwell()
+{
+    double sum_vvx=0;
+    for(int i=0;i<n;i++)
+        sum_vvx+=vel[i].x*vel[i].x;
+    return exp(sum_vvx/(n*temperature));
+}
 void energy_data()
 {
-    energy<<counter<<" "<<kinetic<<" "<<potential<<" "<<potential+kinetic<<" "<<temperature<<" "<<disp<<endl;
+    printf("%d %.4f %.4f %.4f %.4f %.4f\n",counter,kinetic,potential,potential+kinetic,temperature,maxwell());
 }
 
 int main()
 {
+    srand(time(NULL));
+
     init();
-    //---- graphic ---//
-    //init_graphic();
-    //----------------//
-    for(int k=0;k<M;k++)
+    init_graphic();
+
+    counter=0;
+    for(int i=0;i<N;i++)
     {
-        printf("k = %d\n",k);
-        init_sim();
-        for(int i=0;i<N;i++)
-        {
-            potential=0;
-            forces();
-            energy_eval();
-            //---- graphic ---//
-            //redraw();
-            //if(i%h_frames == 0)
-            //    histogram();
-            //----------------//
-            if(k == 0)
-                energy_data();
-            if(n0 <= i && i<=n0+ntime)
-                outPos();
-            counter++;
-            if(wait_time)
-                msleep(wait_time);
-        }
-        outVel();
+        //printf("temperature: %f\n",temperature);
+        potential=0;
+        forces();
+        energy();
+        redraw();
+        if(i%h_frames == 0)
+            histogram();
+        //ovito();
+        energy_data();
+        counter++;
+        if(wait_time)
+            msleep(wait_time);
     }
-    //---- graphic ---//
-    //int key=ggetch();
-    //gclose(win);
-    //----------------//
+    int key;
+    key=ggetch();
+    gclose(win);
     return 0;
 }

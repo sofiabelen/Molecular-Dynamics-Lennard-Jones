@@ -1,0 +1,6 @@
+set grid
+plot 'out'
+replot 48*(x**(-13)-0.5**(-7))
+set xrange [0:1000]
+set yrange [0:1000]
+pause -1

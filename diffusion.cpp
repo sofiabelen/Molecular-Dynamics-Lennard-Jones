@@ -40,16 +40,16 @@ int main()
                 positions>>pos[t][i][j];
 
     vector<double> add(3,0);
-    for(int t=1;t<ntime;t++)
-        for(int i=0;i<n;i++)
-            for(int j=0;j<3;j++)
-            {
-                if(pos[t-1][i][j] - pos[t][i][j] <= l[j]/2.0)
-                    add[j] -= l[j];
-                if(pos[t-1][i][j] - pos[t][i][j] >= l[j]/2.0)
-                    add[j] += l[j];
-                pos[t][i][j] += add[j];
-            }
+    //for(int t=1;t<ntime;t++)
+    //    for(int i=0;i<n;i++)
+    //        for(int j=0;j<3;j++)
+    //        {
+    //            if(pos[t-1][i][j] - pos[t][i][j] <= l[j]/2.0)
+    //                add[j] -= l[j];
+    //            if(pos[t-1][i][j] - pos[t][i][j] >= l[j]/2.0)
+    //                add[j] += l[j];
+    //            pos[t][i][j] += add[j];
+    //        }
 
     int nmin = int((ntime-1)/2);
     msd.resize(nmin,0);

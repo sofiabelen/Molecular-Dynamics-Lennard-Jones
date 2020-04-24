@@ -16,14 +16,14 @@ double vir_sum,v_max,temperature,vx_max,v_range,disp;
 vector<int> x_vel;
 vector<double> total_energy;
 string bglight,bgdark,accent,primary,divider,darkprimary,light;
-ofstream energy,velocity,positions;
+ofstream energy,velocity,positions,tempfile;
 
 struct vec
 {
     double x,y,z;
 };
 
-vector<vec> pos(n),vel(n),acc(n),mv(27);
+vector<vec> pos(n),vel(n),acc(n),mv(27),pos_unchanged(n);
 
 double randomRange(double a,double b)
 {
@@ -254,6 +254,7 @@ void parameters()
     scanf("%d",&wait_time);
 
     pos.resize(n);
+    pos_unchanged.resize(n);
     vel.resize(n);
     acc.resize(n);
 
@@ -291,7 +292,7 @@ void outVel()
 void outPos()
 {
     for(int i=0;i<n;i++)
-        positions<<pos[i].x<<" "<<pos[i].y<<" "<<pos[i].z<<endl;
+        positions<<pos_unchanged[i].x<<" "<<pos_unchanged[i].y<<" "<<pos_unchanged[i].z<<endl;
         //cout<<pos[i].x<<" "<<pos[i].y<<" "<<pos[i].z<<endl;
 }
 void init_sim()
@@ -365,12 +366,15 @@ void init()
     velocity.open(file_name);
     file_name = "Data/positions"+to_string(exp_count);
     positions.open(file_name);
+    file_name = "Data/temperature"+to_string(exp_count);
+    tempfile.open(file_name);
 
     srand(time(NULL));
     colors();
     parameters();
     velocity<<n<<" "<<M<<" "<<d<<endl;
     positions<<n<<" "<<ntime<<" "<<dt<<" "<<lx<<" "<<ly<<" "<<lz<<endl;
+    tempfile<<"x y"<<endl;
     
     fstream readme;
     readme.open("Data/readme",ios_base::app);
@@ -433,6 +437,7 @@ void forces()
     {
         vecAdd(vel[i],acc[i],0.5*dt);
         vecAdd(pos[i],vel[i],dt);
+        vecAdd(pos_unchanged[i],vel[i],dt);
         vecWrap(pos[i]);
     }
     for(int i=0;i<n;i++)
@@ -497,6 +502,7 @@ void ovito()
 void energy_data()
 {
     energy<<counter<<" "<<kinetic<<" "<<potential<<" "<<potential+kinetic<<" "<<temperature<<" "<<disp<<endl;
+    tempfile<<counter*dt<<" "<<temperature<<endl;
 }
 
 int main()
@@ -521,6 +527,15 @@ int main()
             //----------------//
             if(k == 0)
                 energy_data();
+            if(i == n0)
+            {
+                for(int j=0;j<n;j++)
+                {
+                    pos_unchanged[j].x = pos[j].x;
+                    pos_unchanged[j].y = pos[j].y;
+                    pos_unchanged[j].z = pos[j].z;
+                }
+            }
             if(n0 <= i && i<=n0+ntime)
                 outPos();
             counter++;

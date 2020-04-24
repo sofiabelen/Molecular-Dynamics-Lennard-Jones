@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include <string>
 #include <iostream>
 #include <fstream>
 #include <math.h>
@@ -346,14 +347,36 @@ void init_sim()
 }
 void init()
 {
+    //-- Keeping track of experimental data--//
+    ifstream in;
+    ofstream out;
+    in.open("Data/counter");
+    int exp_count;
+    in>>exp_count;
+    in.close();
+    out.open("Data/counter");
+    out<<(exp_count+1);
+    out.close();
+    //---------------------------------------//
+
+    string file_name = "Data/energy"+to_string(exp_count);
+    energy.open(file_name);
+    file_name = "Data/velocity"+to_string(exp_count);
+    velocity.open(file_name);
+    file_name = "Data/positions"+to_string(exp_count);
+    positions.open(file_name);
+
     srand(time(NULL));
-    energy.open("energy");
-    velocity.open("velocity");
-    positions.open("positions");
     colors();
     parameters();
     velocity<<n<<" "<<M<<" "<<d<<endl;
-    positions<<n<<" "<<ntime<<" "<<dt<<endl;
+    positions<<n<<" "<<ntime<<" "<<dt<<" "<<lx<<" "<<ly<<" "<<lz<<endl;
+    
+    fstream readme;
+    readme.open("Data/readme",ios_base::app);
+    readme<<endl<<"Experiment "<<exp_count<<endl;
+    readme<<n<<endl<<M<<endl<<N<<endl<<dt<<endl<<density<<endl<<v_range<<endl<<n0<<" "<<ntime<<endl<<endl;
+    readme.close();
 
     mv[0]=vecSet(-lx,0,0);
     mv[1]=vecSet(-lx,ly,0);

@@ -6,19 +6,31 @@
 
 using namespace std;
 
-ifstream positions;
 ofstream diff;
-int n, ntime;
+ifstream tracker, positions;
+int n, ntime, exp_count;
 double dt;
 vector<vector<vector<double> > > pos;
-vector<double> msd;
+vector<double> msd,l;
 
 int main()
 {
-    positions.open("positions");
-    diff.open("diff");
+    exp_count=-1;
+    tracker.open("Data/counter");
+    tracker>>exp_count;
+    tracker.close();
+    //--- text ----//
+    //------------//
+
+    exp_count--;
+    positions.open("Data/positions"+to_string(exp_count));
+    diff.open("Data/diff"+to_string(exp_count));
     diff<<"t x"<<endl;
+    l.resize(3);
     positions>>n>>ntime>>dt;
+
+    for(int i=0;i<3;i++)
+        positions>>l[i];
 
     pos.resize(ntime,vector<vector<double> >(n,vector<double>(3)));
     
@@ -26,6 +38,18 @@ int main()
         for(int i=0;i<n;i++)
             for(int j=0;j<3;j++)
                 positions>>pos[t][i][j];
+
+    vector<double> add(3,0);
+    for(int t=1;t<ntime;t++)
+        for(int i=0;i<n;i++)
+            for(int j=0;j<3;j++)
+            {
+                if(pos[t-1][i][j] - pos[t][i][j] <= l[j]/2.0)
+                    add[j] -= l[j];
+                if(pos[t-1][i][j] - pos[t][i][j] >= l[j]/2.0)
+                    add[j] += l[j];
+                pos[t][i][j] += add[j];
+            }
 
     int nmin = int((ntime-1)/2);
     msd.resize(nmin,0);

@@ -7,7 +7,11 @@ from scipy.optimize import curve_fit
 import pandas as pd
 from scipy.interpolate import UnivariateSpline
 
-with open('velocity3') as f:
+trk = open('Data/counter','r')
+counter = int(trk.read()) - 1
+file_name = 'Data/velocity'+str(counter)
+
+with open(file_name) as f:
     tmp = [float(x) for x in next(f).split()] # read first line
     n = int(tmp[0])
     m = int(tmp[1])

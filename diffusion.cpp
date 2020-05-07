@@ -19,8 +19,6 @@ int main()
     tracker.open("Data/counter");
     tracker>>exp_count;
     tracker.close();
-    //--- text ----//
-    //------------//
 
     exp_count--;
     positions.open("Data/positions"+to_string(exp_count));
@@ -70,7 +68,7 @@ int main()
                                 (pos[t0+k][i][d]-pos[t0][i][d]);
                 }
             }
-            msd[k-1] /= double(n*nmin*k)*3.0;
+            msd[k-1] /= double(n*nmin)*3.0;
         }
         diff<<k*dt<<" "<<msd[k-1]<<endl;
     }

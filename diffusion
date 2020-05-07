@@ -2,4 +2,4 @@
 
 g++ diffusion.cpp -o o
 ./o
-python plot_diff.py
+python diffusion.py

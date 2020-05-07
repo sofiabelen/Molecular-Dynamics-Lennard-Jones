@@ -1,8 +1,0 @@
-#!/bin/bash
-
-g++ main.cpp -leggx -lX11 -lm -o o
-time ./o<in
-./diffusion
-#python histogram
-#gnuplot plot_energy
-#python histogram.py

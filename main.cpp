@@ -12,11 +12,11 @@ using namespace std;
 int Lx,Ly,Lz,win,m,counter,border,border2,N;
 int n,win2,l_hist,d,h_frames,wait_time,M,n0,ntime;
 double kinetic,potential,lx,ly,lz,mult,dt,density,pressure;
-double vir_sum,v_max,temperature,vx_max,v_range,disp;
+double vir_sum,v_max,temperature,vx_max,v_range,disp,pv;
 vector<int> x_vel;
 vector<double> total_energy;
 string bglight,bgdark,accent,primary,divider,darkprimary,light;
-ofstream energy,velocity,positions,tempfile;
+ofstream energy,velocity,positions,tempfile,pv_file;
 
 struct vec
 {
@@ -216,6 +216,7 @@ void energy_eval()
     temperature=(1.0/(3.0*n))*vv_sum;
     kinetic=vv_sum/(2.0*double(n));
     potential/=n;
+
     total_energy.push_back(kinetic+potential);
 
     double sum=0;
@@ -368,13 +369,17 @@ void init()
     positions.open(file_name);
     file_name = "Data/temperature"+to_string(exp_count);
     tempfile.open(file_name);
+    file_name = "Data/pv"+to_string(exp_count);
+    pv_file.open(file_name);
 
     srand(time(NULL));
     colors();
     parameters();
     velocity<<n<<" "<<M<<" "<<d<<endl;
     positions<<n<<" "<<ntime<<" "<<dt<<" "<<lx<<" "<<ly<<" "<<lz<<endl;
+    energy<<"x k p e t d"<<endl;
     tempfile<<"x y"<<endl;
+    pv_file<<"x y"<<endl;
     
     fstream readme;
     readme.open("Data/readme",ios_base::app);
@@ -432,6 +437,7 @@ void forces()
 //First Step Leapfrog: v(t+dt/2)=v(t)+(dt/2)a(t)
 //                       r(t+dt)=r(t)+dt*v(t+dt/2)
     potential=0;
+    pv=0;
     double vir_sum=0;
     for(int i=0;i<n;i++)
     {
@@ -462,6 +468,8 @@ void forces()
             double rri=1.0/dist_min;              // (r_ij)^(-2)
             double rri3=rri*rri*rri;              // (r_ij)^(-6)
             double f_ij=48.0*rri3*(rri3-0.5)*rri; // 48*(r_ij^(-13)-0.5*r_ij^(-7)
+            pv += 48.0*rri3*rri3-0.5*rri3;
+
             vecAdd(acc[i],dr_min,f_ij);
             vecAdd(acc[j],dr_min,-f_ij);
 
@@ -501,8 +509,9 @@ void ovito()
 }
 void energy_data()
 {
-    energy<<counter<<" "<<kinetic<<" "<<potential<<" "<<potential+kinetic<<" "<<temperature<<" "<<disp<<endl;
+    energy<<counter*dt<<" "<<kinetic<<" "<<potential<<" "<<potential+kinetic<<" "<<temperature<<" "<<disp<<endl;
     tempfile<<counter*dt<<" "<<temperature<<endl;
+    pv_file<<counter*dt<<" "<<pv<<endl;
 }
 
 int main()

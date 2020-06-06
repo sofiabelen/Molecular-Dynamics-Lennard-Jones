@@ -12,11 +12,11 @@ using namespace std;
 int Lx,Ly,Lz,win,m,counter,border,border2,N;
 int n,win2,l_hist,d,h_frames,wait_time,M,n0,ntime;
 double kinetic,potential,lx,ly,lz,mult,dt,density,pressure;
-double vir_sum,v_max,temperature,vx_max,v_range,disp,pv;
+double v_max,temperature,vx_max,v_range,disp,S;
 vector<int> x_vel;
 vector<double> total_energy;
 string bglight,bgdark,accent,primary,divider,darkprimary,light;
-ofstream energy,velocity,positions,tempfile,pv_file;
+ofstream energy,velocity,positions,tempfile,cross_section;
 
 struct vec
 {
@@ -217,23 +217,27 @@ void energy_eval()
     kinetic=vv_sum/(2.0*double(n));
     potential/=n;
 
-    total_energy.push_back(kinetic+potential);
+    //total_energy.push_back(kinetic+potential);
 
-    double sum=0;
-    for(int j=0;j<total_energy.size();j++)
-    {
-        sum+=total_energy[j];
-    }
+    //double sum=0;
+    //for(int j=0;j<total_energy.size();j++)
+    //{
+    //    sum+=total_energy[j];
+    //}
 
-    double avg=sum/double(total_energy.size());
-    double diff_sq=0;
+    //double avg=sum/double(total_energy.size());
+    //double diff_sq=0;
 
-    for(int j=0;j<total_energy.size();j++)
-    {
-        diff_sq+=(avg-total_energy[j])*(avg-total_energy[j]);
-    }
+    //for(int j=0;j<total_energy.size();j++)
+    //{
+    //    diff_sq+=(avg-total_energy[j])*(avg-total_energy[j]);
+    //}
 
-    disp=diff_sq/double(total_energy.size()-1);
+    //disp=diff_sq/double(total_energy.size()-1);
+    
+    // Mean collision cross section
+    double pi=4*atan(1.0);
+    S = pow(2, 1.0 / 3.0) * pow (kinetic, - 1.0 / 6.0) * pi;
 }
 
 void parameters()
@@ -293,12 +297,12 @@ void outVel()
 void outPos()
 {
     for(int i=0;i<n;i++)
-        positions<<pos_unchanged[i].x<<" "<<pos_unchanged[i].y<<" "<<pos_unchanged[i].z<<endl;
+        positions<<pos_unchanged[i].x<<" "<<pos_unchanged[i].y<<" "<<pos_unchanged[i].z<<" "<<endl;
         //cout<<pos[i].x<<" "<<pos[i].y<<" "<<pos[i].z<<endl;
 }
 void init_sim()
 {
-    total_energy.clear();
+    //total_energy.clear();
     counter=0;
     m=int(pow(double(n),1.0/3.0));
     if(m*m*m < n)m++;
@@ -369,8 +373,8 @@ void init()
     positions.open(file_name);
     file_name = "Data/temperature"+to_string(exp_count);
     tempfile.open(file_name);
-    file_name = "Data/pv"+to_string(exp_count);
-    pv_file.open(file_name);
+    file_name = "Data/cross_section"+to_string(exp_count);
+    cross_section.open(file_name);
 
     srand(time(NULL));
     colors();
@@ -379,7 +383,7 @@ void init()
     positions<<n<<" "<<ntime<<" "<<dt<<" "<<lx<<" "<<ly<<" "<<lz<<endl;
     energy<<"x k p e t d"<<endl;
     tempfile<<"x y"<<endl;
-    pv_file<<"x y"<<endl;
+    cross_section<<"x y t"<<endl;
     
     fstream readme;
     readme.open("Data/readme",ios_base::app);
@@ -437,8 +441,6 @@ void forces()
 //First Step Leapfrog: v(t+dt/2)=v(t)+(dt/2)a(t)
 //                       r(t+dt)=r(t)+dt*v(t+dt/2)
     potential=0;
-    pv=0;
-    double vir_sum=0;
     for(int i=0;i<n;i++)
     {
         vecAdd(vel[i],acc[i],0.5*dt);
@@ -468,28 +470,17 @@ void forces()
             double rri=1.0/dist_min;              // (r_ij)^(-2)
             double rri3=rri*rri*rri;              // (r_ij)^(-6)
             double f_ij=48.0*rri3*(rri3-0.5)*rri; // 48*(r_ij^(-13)-0.5*r_ij^(-7)
-            pv += 48.0*rri3*rri3-0.5*rri3;
 
             vecAdd(acc[i],dr_min,f_ij);
             vecAdd(acc[j],dr_min,-f_ij);
 
             //Add Potential Energy
             potential+=4.0*rri3*(rri3-1.0)+1.0;
-            vir_sum+=f_ij*dist_min;
         }
     }
 //Second Step Leapfrog: v(t+dt)=v(t+dt/2)+(dt/2)a(t+dt)
     for(int i=0;i<n;i++)
         vecAdd(vel[i],acc[i],0.5*dt);
-
-//Delete this!! Only for testing
-//    for(int i=0;i<n;i++)
-//    {
-//        vel[i].x=randomRange(25.0,0.0);
-//        vel[i].y=randomRange(25.0,0.0);
-//        vel[i].z=randomRange(25.0,0.0);
-//        vecRandNeg(vel[i]);
-//    }
 }
 void testPos()
 {
@@ -509,9 +500,10 @@ void ovito()
 }
 void energy_data()
 {
-    energy<<counter*dt<<" "<<kinetic<<" "<<potential<<" "<<potential+kinetic<<" "<<temperature<<" "<<disp<<endl;
+    energy<<counter*dt<<" "<<kinetic<<" "<<potential<<" "<<potential+kinetic<<" "<<temperature<<" "<<endl;
     tempfile<<counter*dt<<" "<<temperature<<endl;
-    pv_file<<counter*dt<<" "<<pv<<endl;
+    //cross_section<<counter*dt<<" "<<S<<" "<<1.0/(sqrt(2)*density*kinetic*2.0*S)<<endl;
+    cross_section<<counter*dt<<" "<<S<<" "<<1.0/(density*kinetic*2.0*S)<<endl;
 }
 
 int main()

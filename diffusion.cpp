@@ -53,7 +53,7 @@ int main()
     msd.resize(nmin,0);
 
     //Iterate over all delta T
-    for(int k=1;k<=nmin;k++)
+    for(int DeltaT=1;DeltaT<=nmin;DeltaT++)
     {
         //Iterate over x,y,z
         for(int d=0;d<3;d++)
@@ -64,13 +64,13 @@ int main()
                 //Iterate over all time origins
                 for(int t0=0;t0<nmin;t0++)
                 {
-                    msd[k-1] += (pos[t0+k][i][d]-pos[t0][i][d])*
-                                (pos[t0+k][i][d]-pos[t0][i][d]);
+                    msd[DeltaT-1] += (pos[t0+DeltaT][i][d]-pos[t0][i][d])*
+                                (pos[t0+DeltaT][i][d]-pos[t0][i][d]);
                 }
             }
-            msd[k-1] /= double(n*nmin)*3.0;
+            msd[DeltaT-1] /= double(n*nmin)*3.0;
         }
-        diff<<k*dt<<" "<<msd[k-1]<<endl;
+        diff<<DeltaT*dt<<" "<<msd[DeltaT-1]<<endl;
     }
     return 0;
 }

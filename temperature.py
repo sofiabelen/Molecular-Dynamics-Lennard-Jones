@@ -6,10 +6,11 @@ import math as mt
 from scipy.optimize import curve_fit
 import pandas as pd
 from scipy.interpolate import UnivariateSpline
+import statistics as stats
 
 trk = open('Data/counter','r')
 counter = int(trk.read()) - 1
-#counter = 16
+counter = 54
 
 file_name = 'Data/temperature'+str(counter)
 data = pd.read_table(file_name,sep = '\s+')
@@ -27,8 +28,8 @@ sigma = np.sqrt(np.diag(pcov))
 print("sigma temp=",sigma[0])
 
 plt.style.use('ggplot')
-plt.figure(figsize=(20,12))
-font_size=25
+plt.figure(figsize=(27,15))
+font_size=40
 plt.rc('legend', fontsize=font_size)    # legend fontsize
 plt.xticks(fontsize=font_size)
 plt.yticks(fontsize=font_size)
@@ -39,12 +40,16 @@ plt.yticks(fontsize=font_size)
 #plt.rc('xtick', labelsize=font_size)    # fontsize of the tick labels
 #plt.rc('ytick', labelsize=font_size)    # fontsize of the tick labels
 #plt.rc('legend', fontsize=font_size)    # legend fontsize
+
 #plt.rc('figure', titlesize=font_size)
 
+print("Mean value for temperature:",stats.mean(y))
+
 plt.scatter(x,y)
-plt.xlabel(r"Время $\left(\sqrt{\frac{\sigma^2}{\varepsilon} }\right)$", fontsize=font_size)
+plt.xlabel(r"Время $\left(\sqrt{\frac{m\sigma^2}{\varepsilon} }\right)$", fontsize=font_size)
 plt.ylabel(r"Температура $\left(\frac{\varepsilon}{k_{Б} }\right)$", fontsize=font_size)
 plt.title(r"Зависимость температуры от времени", fontsize=font_size)
 plt.legend()
 plt.savefig("Data/temperature"+str(counter)+".png")
-plt.show()
+#plt.savefig("../Lab2/selfD/temperature"+str(counter)+".png")
+#plt.show()

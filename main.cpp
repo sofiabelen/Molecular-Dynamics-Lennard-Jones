@@ -12,7 +12,7 @@ using namespace std;
 int Lx,Ly,Lz,win,m,counter,border,border2,N;
 int n,win2,l_hist,d,h_frames,wait_time,M,n0,ntime;
 double kinetic,potential,lx,ly,lz,mult,dt,density,pressure;
-double v_max,temperature,vx_max,v_range,disp,S;
+double v_max,temperature,vx_max,v_range,disp,S,T,D;
 vector<int> x_vel;
 vector<double> total_energy;
 string bglight,bgdark,accent,primary,divider,darkprimary,light;
@@ -217,27 +217,31 @@ void energy_eval()
     kinetic=vv_sum/(2.0*double(n));
     potential/=n;
 
-    //total_energy.push_back(kinetic+potential);
+    total_energy.push_back(kinetic+potential);
 
-    //double sum=0;
-    //for(int j=0;j<total_energy.size();j++)
-    //{
-    //    sum+=total_energy[j];
-    //}
+    double sum=0;
+    for(int j=0;j<total_energy.size();j++)
+    {
+        sum+=total_energy[j];
+    }
 
-    //double avg=sum/double(total_energy.size());
-    //double diff_sq=0;
+    double avg=sum/double(total_energy.size());
+    double diff_sq=0;
 
-    //for(int j=0;j<total_energy.size();j++)
-    //{
-    //    diff_sq+=(avg-total_energy[j])*(avg-total_energy[j]);
-    //}
+    for(int j=0;j<total_energy.size();j++)
+    {
+        diff_sq+=(avg-total_energy[j])*(avg-total_energy[j]);
+    }
 
-    //disp=diff_sq/double(total_energy.size()-1);
+    disp=diff_sq/double(total_energy.size()-1);
     
     // Mean collision cross section
     double pi=4*atan(1.0);
-    S = pow(2, 1.0 / 3.0) * pow (kinetic, - 1.0 / 6.0) * pi;
+    //T = pow(2, 1.0 / 6.0) * pow(kinetic, - 5.0 / 6.0) / (pi * density);
+    S = pow(2, 1.0 / 3.0) * pow(kinetic, - 1.0 / 6.0) * pi;
+    T = 1 / (pow(2, 4.0 / 3.0) * pow(kinetic, 1.0 / 3.0) * pi * density);
+    //D = pow(2, - 7.0 / 6.0) * pow(kinetic, 2.0 / 3.0) / (3.0 * pi * density);
+    D = pow(2, - 1.0 / 3.0) * pow(kinetic, 2.0 / 3.0) / (3.0 * pi * density);
 }
 
 void parameters()
@@ -302,7 +306,7 @@ void outPos()
 }
 void init_sim()
 {
-    //total_energy.clear();
+    total_energy.clear();
     counter=0;
     m=int(pow(double(n),1.0/3.0));
     if(m*m*m < n)m++;
@@ -383,7 +387,7 @@ void init()
     positions<<n<<" "<<ntime<<" "<<dt<<" "<<lx<<" "<<ly<<" "<<lz<<endl;
     energy<<"x k p e t d"<<endl;
     tempfile<<"x y"<<endl;
-    cross_section<<"x y t"<<endl;
+    cross_section<<"x y t d"<<endl;
     
     fstream readme;
     readme.open("Data/readme",ios_base::app);
@@ -500,10 +504,10 @@ void ovito()
 }
 void energy_data()
 {
-    energy<<counter*dt<<" "<<kinetic<<" "<<potential<<" "<<potential+kinetic<<" "<<temperature<<" "<<endl;
+    energy<<counter*dt<<" "<<kinetic<<" "<<potential<<" "<<potential+kinetic<<" "<<temperature<<" "<<disp<<endl;
     tempfile<<counter*dt<<" "<<temperature<<endl;
     //cross_section<<counter*dt<<" "<<S<<" "<<1.0/(sqrt(2)*density*kinetic*2.0*S)<<endl;
-    cross_section<<counter*dt<<" "<<S<<" "<<1.0/(density*kinetic*2.0*S)<<endl;
+    cross_section<<counter*dt<<" "<<S<<" "<<T<<" "<<D<<endl;
 }
 
 int main()

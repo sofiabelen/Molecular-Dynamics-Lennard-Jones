@@ -170,8 +170,7 @@ void histogram()
 
     copylayer(win2,1,0);
 }
-void redraw()
-{
+void redraw() {
     gclr(win);
     newcolor(win,divider.c_str());
     drawrect(win,double(border),double(border),double(Lx),double(Ly));
@@ -274,10 +273,9 @@ void parameters()
     mult=pow(double(Lx*Ly*Lz)*density/double(n),1.0/3.0);
     lx=double(Lx)/mult;
     ly=double(Ly)/mult;
-    lz=double(Lz)/mult;
+    lz = double(Lz)/mult;
 }
-void colors()
-{
+void colors() {
     bgdark="#212121";
     bglight="#B2DFDB";
     accent="#00BCD4";

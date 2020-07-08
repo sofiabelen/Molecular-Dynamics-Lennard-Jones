@@ -20,4 +20,5 @@ ax.set_ylabel(r"Темература $\left(\varepsilon\right)$")
 ax.set_title(r"Зависимость температуры от времени")
 
 fig.set_size_inches(8, 6)
-plt.savefig("Data2/temperature" + str(counter)+".png")
+plt.savefig("Images/temperature" + str(counter)+".png")
+plt.savefig("Images/temperature" + str(counter)+".svg")

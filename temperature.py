@@ -1,55 +1,23 @@
-import matplotlib as mpl
-from matplotlib import rc
 import matplotlib.pyplot as plt
-import numpy as np
-import math as mt
-from scipy.optimize import curve_fit
 import pandas as pd
-from scipy.interpolate import UnivariateSpline
-import statistics as stats
+import seaborn as sns
 
-trk = open('Data/counter','r')
+trk = open('Data2/counter', 'r')
 counter = int(trk.read()) - 1
-counter = 54
 
-file_name = 'Data/temperature'+str(counter)
-data = pd.read_table(file_name,sep = '\s+')
-x = data['x']
-y = data['y']
+filename = 'Data2/temperature' + str(counter)
+data = pd.read_table(filename, sep=r'\s+')
 
-x = np.array(x, dtype=np.float128)
-y = np.array(y, dtype=np.float128)
+sns.set(context='notebook', style='darkgrid')
+sns.set_palette('Reds', color_codes=True)
 
-def line(x,a,b):
-    return a*x+b
+fig, ax = plt.subplots()
 
-popt, pcov = curve_fit(f = line, xdata = x, ydata = y)
-sigma = np.sqrt(np.diag(pcov))
-print("sigma temp=",sigma[0])
+ax.scatter(data['time'], data['temp'], color='g')
 
-plt.style.use('ggplot')
-plt.figure(figsize=(27,15))
-font_size=40
-plt.rc('legend', fontsize=font_size)    # legend fontsize
-plt.xticks(fontsize=font_size)
-plt.yticks(fontsize=font_size)
+ax.set_xlabel(r"Время $\left(\sqrt{\frac{m\sigma^2}{\varepsilon} }\right)$")
+ax.set_ylabel(r"Темература $\left(\varepsilon\right)$")
+ax.set_title(r"Зависимость температуры от времени")
 
-#plt.rc('font', size=font_size)          # controls default text sizes
-#plt.rc('axes', titlesize=font_size)     # fontsize of the axes title
-#plt.rc('axes', labelsize=font_size)    # fontsize of the x and y labels
-#plt.rc('xtick', labelsize=font_size)    # fontsize of the tick labels
-#plt.rc('ytick', labelsize=font_size)    # fontsize of the tick labels
-#plt.rc('legend', fontsize=font_size)    # legend fontsize
-
-#plt.rc('figure', titlesize=font_size)
-
-print("Mean value for temperature:",stats.mean(y))
-
-plt.scatter(x,y)
-plt.xlabel(r"Время $\left(\sqrt{\frac{m\sigma^2}{\varepsilon} }\right)$", fontsize=font_size)
-plt.ylabel(r"Температура $\left(\frac{\varepsilon}{k_{Б} }\right)$", fontsize=font_size)
-plt.title(r"Зависимость температуры от времени", fontsize=font_size)
-plt.legend()
-plt.savefig("Data/temperature"+str(counter)+".png")
-#plt.savefig("../Lab2/selfD/temperature"+str(counter)+".png")
-#plt.show()
+fig.set_size_inches(8, 6)
+plt.savefig("Data2/temperature" + str(counter)+".png")

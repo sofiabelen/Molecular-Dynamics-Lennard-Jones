@@ -1,7 +1,6 @@
 # Molecular Dynamics simulation using Lennard-Jones Potential
 
-## Mean Squared Displacement
-![Alt text](Images/diffusion10.svg?raw=true "msd")
+![Alt text](Images/sim.gif?raw=true "simulation")
 
 ## Distribution of Velocity Projections (Maxwell Distribution)
 ![Alt text](Images/velocities12.svg?raw=true "velocities")

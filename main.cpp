@@ -6,7 +6,7 @@
 #include <vector>
 #include <fstream>
 #include <string>
-#include <iostream>
+#include <ios>
 
 class Vector {
     public:
@@ -199,10 +199,10 @@ class System {
          int m = static_cast<int>(pow(static_cast<double>(n_part),
                      1.0 / dim));
 
-         // if (static_cast<int>(pow(static_cast<double>(m), dim))
-         //     < n_part) {
-         //     m++;
-         // }
+         if (static_cast<int>(pow(static_cast<double>(m), dim))
+             < n_part) {
+             m++;
+         }
 
          std::vector<int> d(dim, 0);
          printf("m:%d\n", m);
@@ -314,16 +314,18 @@ struct Parameters {
 class Output {
  public:
      std::ofstream energy, velocities, positions, temperature;
-     std::ofstream readme, mean_free_time;
+     std::ofstream  mean_free_time, parameters;
+     std::fstream readme;
+
+     std::string energy_name, velocities_name , counter_name,
+         temperature_name, readme_name, mean_free_time_name,
+         positions_name, parameters_name;
 
      Output(std::ifstream &file_names, const Parameters &param) {
-         std::string energy_name, velocities_name , counter_name,
-             temperature_name, readme_name, mean_free_time_name,
-             positions_name;
 
          file_names >> energy_name >> velocities_name >> positions_name
              >> counter_name >> temperature_name >> readme_name
-             >> mean_free_time_name;
+             >> mean_free_time_name >> parameters_name;
 
          // std::cout << energy_name << " " << velocities_name << " " <<
          //     counter_name << " " << temperature_name << " " <<
@@ -336,7 +338,7 @@ class Output {
          counter_in >> exp_count;
          counter_in.close();
 
-         printf("Experiment number#%d\n", exp_count);
+         printf("Experiment number #%d\n", exp_count);
 
          std::ofstream counter_out(counter_name);
          counter_out << (exp_count + 1);
@@ -350,20 +352,39 @@ class Output {
          positions.open(positions_name + exp_count_str);
          temperature.open(temperature_name + exp_count_str);
          mean_free_time.open(mean_free_time_name + exp_count_str);
+         parameters.open(parameters_name + exp_count_str);
 
-         // double n_part_real = static_cast<double>(param.n_part);
-         // velocities << n_part << " " << n_
-         // positions << 
          energy << "time kinetic potential\n";
          temperature << "time temp\n";
+         for (int i = 0; i < param.dim; i++) {
+             velocities << i << " ";
+         }
+         velocities << "\n";
 
-         std::ofstream readme(readme_name);
+        parameters << param.n_sim << "\n" << param.n_step << "\n"
+            << param.n_stable << "\n" << param.n_part << "\n"
+            << param.dim << "\n" << param.dt << "\n"
+            << param.density << "\n" << param.vel_range;
+
+         readme.open(readme_name, std::ios_base::app);
          readme << "\nExperiment #" << exp_count << "\n" << param.n_sim
              << "\n" << param.n_step << "\n" << param.n_stable
              << "\n" << param.n_part << "\n" << param.dim << "\n"
              << param.dt << "\n" << param.density << "\n"
              << param.vel_range << "\n\n";
          readme.close();
+     }
+
+     void finalize() {
+         readme.open(readme_name, std::ios_base::app);
+         readme << "Experiment finalized.\n";
+
+         readme.close();
+         energy.close();
+         velocities.close();
+         positions.close();
+         temperature.close();
+         mean_free_time.close();
      }
 
      void writeResults(const System &sys) {
@@ -378,19 +399,16 @@ class Output {
      }
 
      void writePositions(const System &sys) {
-         positions << sys.counter * sys.dt <<"\n";
-
          for (int i = 0; i < sys.n_part; i++) {
              for (int j = 0; j < sys.dim; j++) {
                 positions << sys.pos_unwrap[i].coord[j] << " ";
              }
              positions << "\n";
          }
+         positions << "\n";
      }
 
      void writeVelocities(const System &sys) {
-         velocities << sys.counter * sys.dt <<"\n";
-
          for (int i = 0; i < sys.n_part; i++) {
              for (int j = 0; j < sys.dim; j++) {
                 velocities << sys.vel[i].coord[j] << " ";
@@ -428,9 +446,11 @@ int main(int argc, char** argv) {
             }
             if (i >= param.n_stable) { 
                 output.writePositions(sys);
+                output.writeVelocities(sys);
             }
         }
-        output.writeVelocities(sys);
     }
+
+    output.finalize();
     return 0;
 }

@@ -5,11 +5,11 @@ import seaborn as sns
 trk = open('Data2/counter', 'r')
 counter = int(trk.read()) - 1
 
-filename = 'Data2/energy'+str(counter)
+filename = 'Data2/energy' + str(counter)
 data = pd.read_table(filename, sep=r'\s+')
 
 sns.set(context='notebook', style='darkgrid')
-sns.set_palette(sns.diverging_palette(10, 220, sep=80, n=7), color_codes=True)
+sns.set_palette('Paired', color_codes=True)
 
 fig, ax = plt.subplots()
 ax.scatter(data['time'], data['kinetic'], color='r',\
@@ -23,6 +23,7 @@ ax.set_xlabel(r"Время $\left(\sqrt{\frac{m\sigma^2}{\varepsilon} }\right)$"
 ax.set_ylabel(r"Энергия $\left(\varepsilon\right)$")
 ax.set_title(r"Зависимость энергии от времени")
 ax.legend(loc='best')
+ax.set_xlim(left=0)
 
 fig.set_size_inches(8, 6)
 fig.savefig("Images/energy" + str(counter) + ".png")

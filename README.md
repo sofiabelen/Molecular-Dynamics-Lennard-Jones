@@ -5,3 +5,6 @@
 
 ## Temperature
 ![Alt text](Images/temperature47.svg?raw=true "energy")
+
+## Mean squared displacement
+![Alt text](Images/diffusion10.svg?raw=true "msd")

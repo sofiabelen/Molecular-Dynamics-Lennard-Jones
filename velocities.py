@@ -17,9 +17,9 @@ sns.set_palette(sns.color_palette("Blues", 3))
 
 fig, ax = plt.subplots()
 
-ax = sns.distplot(data['0'], label='x-компонент')
-ax = sns.distplot(data['1'], label='y-компонент')
-ax = sns.distplot(data['2'], label='z-компонент')
+ax = sns.distplot(data['0'], label='x-компонент', kde=False)
+ax = sns.distplot(data['1'], label='y-компонент', kde=False)
+ax = sns.distplot(data['2'], label='z-компонент', kde=False)
 
 ax.set_xlim(left=0)
 ax.set_yscale('log')

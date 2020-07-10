@@ -1,5 +1,0 @@
-#!/bin/bash
-
-g++ diffusion.cpp -o o
-./o
-python diffusion.py

@@ -1,11 +1,8 @@
 #!/bin/bash
 
-g++ main.cpp -leggx -lX11 -lm -o o
-time ./o<in
-#./diffusion
-python temperature.py
+g++ main.cpp -o o
+./o
+python velocities.py
 python energy.py
-python pv.py
-#python histogram
-#gnuplot plot_energy
-#python histogram.py
+python temperature.py
+python diffusion.py

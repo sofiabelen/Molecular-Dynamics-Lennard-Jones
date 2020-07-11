@@ -12,7 +12,7 @@
 ![Alt text](Images/velocities12.svg?raw=true "velocities")
 
 ## Energy is Conserved
-![Alt text](Images/energy47.svg?raw=true "energy")
+![Alt text](Images/energy13.svg?raw=true "energy")
 
 ## Temperature
-![Alt text](Images/temperature47.svg?raw=true "energy")
+![Alt text](Images/temperature13.svg?raw=true "energy")

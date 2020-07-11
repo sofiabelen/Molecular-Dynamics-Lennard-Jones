@@ -10,9 +10,6 @@ filename = 'Data2/positions' + str(counter)
 
 param_name = 'Data2/parameters'  + str(counter)
 
-filename = 'tmp'
-param_name = 'tmp_param'
-
 param = np.loadtxt(param_name)
 data = np.loadtxt(filename)
 
@@ -42,8 +39,8 @@ def line(x, a, b):
 def parabola(x, a, b, c):
     return a*x**2 + b*x + c
 
-parabola_end = int(t_range * 0.2)
-line_start = int(t_range * 0.5)
+parabola_end = int(t_range * 0.1)
+line_start = int(t_range * 0.6)
 time = np.arange(0, t_range - 1) * dt
 
 popt_parabola, pcov_parabola = curve_fit(f=parabola,\
@@ -56,17 +53,27 @@ popt_line, pcov_line = curve_fit(f=line,\
 
 
 sns.set(context='notebook', style='darkgrid')
-sns.set_palette('colorblind', color_codes=True)
+pal = sns.hls_palette(10, l=.7, h=.5, s=.4)
+pal_dark = sns.hls_palette(10, l=.3)
+color_scatter = pal[0]
+color_line = pal_dark[7]
+color_parab = pal_dark[3]
+
+width_scatter = 4.0
+width_lines = 3.5
+width_point = 5.0
 
 fig, ax = plt.subplots()
 
-ax.scatter(time, msd, color='c')
-
-ax.plot(time, parabola(time, *popt_parabola),\
-        label='Параболическая асимтота', color='b')
+ax.scatter(time, msd, color=color_scatter, linewidth=width_scatter)
 
 ax.plot(time, line(time, *popt_line),\
-        label='Линейная асимтота', color='m')
+        label='Линейная асимтота', color=color_line,\
+        linewidth=width_lines)
+
+ax.plot(time, parabola(time, *popt_parabola),\
+        label='Параболическая асимтота', color=color_parab,\
+        linewidth=width_lines)
 
 ax.set_xlabel(r"Время $\left(\sqrt{\frac{m\sigma^2}{\varepsilon} }\right)$")
 ax.set_ylabel(r"$\left\langle r^2\right\rangle \left(\sigma^2\right)$")
@@ -82,7 +89,7 @@ fig.savefig("Images/diffusion" + str(counter) + ".svg")
 
 fig_log, ax_log = plt.subplots()
 
-ax_log.scatter(time, msd, color='c')
+ax_log.scatter(time, msd, color=color_scatter, linewidth=width_scatter)
 
 ax_log.set_xscale('log')
 ax_log.set_yscale('log')
@@ -117,14 +124,16 @@ yi = m1*xi + b1
 time = np.arange(1, t_range - 1) * dt
 
 ax_log.plot(time, line_in_log(time, m1, b1),\
-        label='Экстраполяция линейного участка', color='c')
+        label='Экстраполяция линейного участка', color=color_line,\
+        linewidth=width_lines)
 
 ax_log.plot(time, line_in_log(time, m2, b2),\
-        label='Экстраполяция параболического участка', color='g')
+        label='Экстраполяция параболического участка',\
+        color=color_parab, linewidth=width_lines)
 
 ax_log.plot(10**xi,10**yi, 'ro',\
         label=r'Время свободного пробега $\tau=$'+'%.2f'%10**xi,\
-        color='black')
+        color='black', linewidth=width_point)
 
 ax_log.set_xlabel(\
         r"Время $\left(\sqrt{\frac{m\sigma^2}{\varepsilon} }\right)$")

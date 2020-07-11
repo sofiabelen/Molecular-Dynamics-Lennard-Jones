@@ -445,7 +445,9 @@ int main(int argc, char** argv) {
                 }
             }
             if (i >= param.n_stable) { 
-                output.writePositions(sys);
+                if (k == 0) {
+                    output.writePositions(sys);
+                }
                 output.writeVelocities(sys);
             }
         }

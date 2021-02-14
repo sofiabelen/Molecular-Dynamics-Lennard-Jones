@@ -1,6 +1,6 @@
 # Molecular Dynamics Simulation using Lennard-Jones Potential
 
-![Alt text](Images/sim.gif?raw=true "simulation")
+![Alt text](Images/simulation.gif?raw=true "simulation")
 
 ## Mean Squared Displacement
 ![Alt text](Images/diffusion13.svg?raw=true "mean squared displacement")

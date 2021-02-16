@@ -3,12 +3,12 @@ import numpy as np
 import seaborn as sns
 from scipy.optimize import curve_fit
 
-trk = open('Data2/counter', 'r')
+trk = open('data/counter', 'r')
 counter = int(trk.read()) - 1
 
-filename = 'Data2/positions' + str(counter)
+filename = 'data/positions' + str(counter)
 
-param_name = 'Data2/parameters'  + str(counter)
+param_name = 'data/parameters'  + str(counter)
 
 param = np.loadtxt(param_name)
 data = np.loadtxt(filename)
@@ -82,8 +82,8 @@ ax.set_ylim(bottom=-msd[t_range - 2] * 0.07)
 ax.legend(loc='best')
 
 fig.set_size_inches(8, 6.3)
-fig.savefig("Images/diffusion" + str(counter) + ".png")
-fig.savefig("Images/diffusion" + str(counter) + ".svg")
+fig.savefig("media/diffusion" + str(counter) + ".png")
+fig.savefig("media/diffusion" + str(counter) + ".svg")
 
 # --- Log-Log Plot --- #
 
@@ -144,5 +144,5 @@ ax_log.set_title(\
 ax_log.legend(loc='best')
 
 fig_log.set_size_inches(8, 6.3)
-fig_log.savefig("Images/diffusion_log" + str(counter) + ".png")
-fig_log.savefig("Images/diffusion_log" + str(counter) + ".svg")
+fig_log.savefig("media/diffusion_log" + str(counter) + ".png")
+fig_log.savefig("media/diffusion_log" + str(counter) + ".svg")

@@ -2,10 +2,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-trk = open('Data2/counter', 'r')
+trk = open('data/counter', 'r')
 counter = int(trk.read()) - 1
 
-filename = 'Data2/velocities' + str(counter)
+filename = 'data/velocities' + str(counter)
 
 data = pd.read_table(filename, sep=r'\s+')
 
@@ -30,5 +30,5 @@ ax.set_ylabel(r"$\ln(n_v)$")
 ax.legend()
 
 fig.set_size_inches(8, 6)
-fig.savefig("Images/velocities" + str(counter) + ".png")
-fig.savefig("Images/velocities" + str(counter) + ".svg")
+fig.savefig("media/velocities" + str(counter) + ".png")
+fig.savefig("media/velocities" + str(counter) + ".svg")

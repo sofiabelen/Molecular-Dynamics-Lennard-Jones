@@ -2,10 +2,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-trk = open('Data2/counter', 'r')
+trk = open('data/counter', 'r')
 counter = int(trk.read()) - 1
 
-filename = 'Data2/energy' + str(counter)
+filename = 'data/energy' + str(counter)
 data = pd.read_table(filename, sep=r'\s+')
 
 sns.set(context='notebook', style='darkgrid')
@@ -26,5 +26,5 @@ ax.legend(loc='best')
 ax.set_xlim(left=0)
 
 fig.set_size_inches(8, 6)
-fig.savefig("Images/energy" + str(counter) + ".png")
-fig.savefig("Images/energy" + str(counter) + ".svg")
+fig.savefig("media/energy" + str(counter) + ".png")
+fig.savefig("media/energy" + str(counter) + ".svg")

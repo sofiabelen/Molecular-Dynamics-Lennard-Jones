@@ -55,6 +55,7 @@ plt.xlabel(r"$v_x^2$")
 plt.ylabel(r"$\log_{10}(n_v)$")
 plt.legend()
 
-plt.savefig("hist.png")
+plt.savefig("media/hist.png")
+plt.savefig("media/hist.svg")
 
 plt.show()

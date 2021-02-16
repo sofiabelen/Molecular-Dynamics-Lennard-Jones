@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <ctime>
+#include <iostream>
 #include <climits>
 #include <cfloat>
 #include <random>
@@ -120,7 +121,7 @@ class Vector {
             for (int i = 0; i < dim; i++) {
                 if (coord[i] < 0) {
                     coord[i] += size;
-                } else if (coord[i] >= size) {
+                } else if (coord[i] > size) {
                     coord[i] -= size;
                 }
             }
@@ -136,10 +137,11 @@ class Vector {
 
 class System {
  public:
-     int n_part, dim, counter;
+     int n_part, n_step, dim, counter;
      double size, temperature, kinetic, potential, density;
-     double energy, dt, mft;
+     double energy, dt, mft, mean_energy, standard_dev_energy;
      std::vector<Vector> pos, pos_unwrap, vel, acc, lattice;
+     std::vector<double> total_energy;
 
      void createLattice(int j, Vector cur) {
          if (j == dim) {
@@ -154,6 +156,12 @@ class System {
 
      void initPositions(int &u, int k, std::vector<int> d,
              const int &m, const double &ds) {
+         // std::cout << "u: " << u << " k: " << k << "\nd:\n";
+         // for (int i = 0; i < d.size(); i++) {
+         //     std::cout << d[i] << " ";
+         // }
+         // std::cout << "\n";
+
          if (u < n_part) {
             for (int i = 0; i < dim; i++) {
                  pos[u].coord[i] = ds * static_cast<double>(d[i]);
@@ -169,12 +177,27 @@ class System {
             }
          }
      }
+    
+     void initPositions3d(const int &m, const double &ds) {
+         int u = 0;
+         for(int i = 0; i < m; i++) {
+            for(int j = 0; j < m; j++) {
+                for(int k = 0; k < m; k++) {
+                    pos[u].coord[0] = ds * static_cast<double>(i + 1);
+                    pos[u].coord[1] = ds * static_cast<double>(j + 1);
+                    pos[u++].coord[2] = ds * static_cast<double>(k + 1);
+                }
+            }
+         }
+     }
 
-     System(const int &n_part, const int &dim, const double &dt,
-             const double &density, const double &vel_range) {
+     System(const int &n_part, const int &n_step, const int &dim,
+             const double &dt, const double &density,
+             const double &vel_range) {
          counter = 0;
 
          this->n_part = n_part;
+         this->n_step = n_step;
          this->dim = dim;
          this->density = density;
          this->dt = dt;
@@ -204,10 +227,11 @@ class System {
              m++;
          }
 
-         std::vector<int> d(dim, 0);
-         printf("m:%d\n", m);
-         int u = 0;
-         initPositions(u, 0, d, m, size / static_cast<double>(m + 1));
+         // std::vector<int> d(dim, 0);
+         // int u = 0;
+         // initPositions(u, 0, d, m, size / static_cast<double>(m + 1));
+
+         initPositions3d(m, size / static_cast<double>(m + 2));
 
          pos_unwrap = pos;
 
@@ -276,33 +300,56 @@ class System {
         temperature = v_sq_sum / static_cast<double>(dim * n_part);
         kinetic = v_sq_sum / (2.0 * static_cast<double>(n_part));
         potential /= static_cast<double>(n_part);
+        mean_energy += kinetic + potential;
+        total_energy.push_back(kinetic + potential);
         
         // Mean free time
         mft = 1.0 / (pow(2, 4.0 / 3.0) * pow(kinetic, 1.0 / 3.0) * M_PI * density);
+     }
+
+     void calculateEnergyFluctuation() {
+         mean_energy /= n_step;
+         standard_dev_energy = 0;
+
+         for(int i = 0; i < n_step; i++) {
+             standard_dev_energy += (total_energy[i] - mean_energy)
+                 * (total_energy[i] - mean_energy);
+         }
+
+         standard_dev_energy /= n_step - 1;
+         standard_dev_energy = pow(standard_dev_energy, 0.5);
+         // standard_dev_energy /= mean_energy;
      }
 
      void show() {
          printf("Number of particles: %d\n", n_part);
          printf("Dimensions: %d\n", dim);
          printf("Size: %.1f\n", size);
-         printf("dt: %.1f\n", dt);
+         printf("dt: %f\n", dt);
          printf("Density: %.1f\n", density);
-         printf("Positions:\n");
-         for (int i = 0; i < n_part; i++) {
-             pos[i].show();
-         }
-         printf("\nVelocities:\n");
-         for (int i = 0; i < n_part; i++) {
-             vel[i].show();
-         }
-         printf("\nPositions unwrapped:\n");
-         for (int i = 0; i < n_part; i++) {
-             pos_unwrap[i].show();
-         }
-         printf("\n Lattice (size: %d):\n", lattice.size());
-         for (int i = 0; i < lattice.size(); i++) {
-             lattice[i].show();
-         }
+         // printf("Positions:\n");
+
+         // for (int i = 0; i < n_part; i++) {
+         //     pos[i].show();
+         // }
+
+         // printf("\nVelocities:\n");
+         // for (int i = 0; i < n_part; i++) {
+         //     vel[i].show();
+         // }
+         // printf("\nPositions unwrapped:\n");
+         // for (int i = 0; i < n_part; i++) {
+         //     pos_unwrap[i].show();
+         // }
+
+         printf("Mean Total Energy: %.1f\n", mean_energy);
+         std::cout << "Energy Standard Deviation: "
+             << standard_dev_energy << "\n";
+         // printf("Lattice (size: %d):\n", lattice.size());
+         // for (int i = 0; i < lattice.size(); i++) {
+         //     lattice[i].show();
+         // }
+        printf("\n\n");
      }
 };
 
@@ -313,17 +360,19 @@ struct Parameters {
 
 class Output {
  public:
-     std::ofstream energy, velocities, positions, temperature;
-     std::ofstream  mean_free_time, parameters;
+     std::ofstream energy, energy_fluctuation, velocities, positions;
+     std::ofstream temperature, mean_free_time, parameters;
      std::fstream readme;
 
-     std::string energy_name, velocities_name , counter_name,
+     std::string energy_name, energy_fluctuation_name,
+         velocities_name , counter_name,
          temperature_name, readme_name, mean_free_time_name,
          positions_name, parameters_name;
 
      Output(std::ifstream &file_names, const Parameters &param) {
 
-         file_names >> energy_name >> velocities_name >> positions_name
+         file_names >> energy_name >> energy_fluctuation_name
+             >> velocities_name >> positions_name
              >> counter_name >> temperature_name >> readme_name
              >> mean_free_time_name >> parameters_name;
 
@@ -348,14 +397,17 @@ class Output {
          std::string exp_count_str = std::to_string(exp_count);
 
          energy.open(energy_name + exp_count_str);
+         energy_fluctuation.open(energy_fluctuation_name + exp_count_str);
          velocities.open(velocities_name + exp_count_str);
-         positions.open(positions_name + exp_count_str);
+         positions.open(positions_name + exp_count_str + ".xyz");
          temperature.open(temperature_name + exp_count_str);
          mean_free_time.open(mean_free_time_name + exp_count_str);
          parameters.open(parameters_name + exp_count_str);
 
          energy << "time kinetic potential\n";
+         energy_fluctuation << "dt fluctuation\n";
          temperature << "time temp\n";
+
          for (int i = 0; i < param.dim; i++) {
              velocities << i << " ";
          }
@@ -381,6 +433,7 @@ class Output {
 
          readme.close();
          energy.close();
+         energy_fluctuation.close();
          velocities.close();
          positions.close();
          temperature.close();
@@ -398,14 +451,19 @@ class Output {
              << sys.mft << "\n";
      }
 
-     void writePositions(const System &sys) {
+     void writePositions(const System &sys, int iteration) {
+         // Changed pos_unwrap -> pos
+         positions << sys.n_part << "\n" << iteration << "\n";
          for (int i = 0; i < sys.n_part; i++) {
              for (int j = 0; j < sys.dim; j++) {
-                positions << sys.pos_unwrap[i].coord[j] << " ";
+                positions << sys.pos[i].coord[j] << " ";
+             }
+             // Added this
+             for (int j = 0; j < sys.dim; j++) {
+                positions << sys.vel[i].coord[j] << " ";
              }
              positions << "\n";
          }
-         positions << "\n";
      }
 
      void writeVelocities(const System &sys) {
@@ -415,6 +473,10 @@ class Output {
              }
              velocities << "\n";
          }
+     }
+
+     void writeEnergyFluctuation(const System &sys) {
+         energy_fluctuation << sys.dt << " " << sys.standard_dev_energy << "\n";
      }
 };
 
@@ -428,17 +490,24 @@ int main(int argc, char** argv) {
 
     Output output(file_names, param);
 
+    double dtstart_power = -4;
+    double dtend_power = -2;
+    // double total_run_time = param.n_step * 0.001;
+
     for (int k = 0; k < param.n_sim; k++) {
         printf("Simulation #%d\n", k);
-        System sys(param.n_part, param.dim, param.dt,
-                param.density, param.vel_range);
-        // sys.show();
+
+        // Changing dt
+        // double dt = pow(10, dtstart_power + (dtend_power - dtstart_power)
+        //         * k / param.n_sim);
+        // System sys(param.n_part,
+        //         static_cast<int>(round(total_run_time / dt)),
+        //         param.dim, dt, param.density, param.vel_range);
+
+        System sys(param.n_part, param.n_step,
+                param.dim, param.dt, param.density, param.vel_range);
 
         for (int i = 0; i < param.n_step; i++) {
-            sys.calculate_forces();
-            sys.calculations();
-            output.writeResults(sys);
-
             if (i == param.n_stable) {
                 for (int j = 0; j < param.n_part; j++) {
                     sys.pos_unwrap[j] = sys.pos[j];
@@ -446,11 +515,18 @@ int main(int argc, char** argv) {
             }
             if (i >= param.n_stable) { 
                 if (k == 0) {
-                    output.writePositions(sys);
+                    output.writePositions(sys, i);
                 }
                 output.writeVelocities(sys);
             }
+
+            sys.calculate_forces();
+            sys.calculations();
+            output.writeResults(sys);
         }
+        sys.calculateEnergyFluctuation();
+        output.writeEnergyFluctuation(sys);
+        sys.show();
     }
 
     output.finalize();

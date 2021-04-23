@@ -11,8 +11,10 @@
 ## Distribution of Velocity Projections (Maxwell Distribution)
 ![Alt text](media/velocities12.svg?raw=true "velocities")
 
+<!---
 ## Energy is Conserved
 ![Alt text](media/energy13.svg?raw=true "energy")
 
 ## Temperature
 ![Alt text](media/temperature13.svg?raw=true "energy")
+---!>

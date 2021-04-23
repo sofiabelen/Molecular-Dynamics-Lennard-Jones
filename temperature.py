@@ -2,10 +2,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-trk = open('Data2/counter', 'r')
+trk = open('data/counter', 'r')
 counter = int(trk.read()) - 1
 
-filename = 'Data2/temperature' + str(counter)
+filename = 'data/temperature' + str(counter)
 data = pd.read_table(filename, sep=r'\s+')
 
 sns.set(context='notebook', style='darkgrid')
@@ -21,5 +21,5 @@ ax.set_title(r"Зависимость температуры от времени
 ax.set_xlim(left=0)
 
 fig.set_size_inches(8, 6)
-plt.savefig("Images/temperature" + str(counter)+".png")
-plt.savefig("Images/temperature" + str(counter)+".svg")
+plt.savefig("media/temperature" + str(counter)+".png")
+plt.savefig("media/temperature" + str(counter)+".svg")

@@ -1,12 +1,7 @@
 o
 Dennis_Rapaport-The_Art_of_Molecular_Dynamics_Simulation-EN.pdf
 in
-Data/
-Old/
-Experiments2/
-run_graphic
-in_graphic
-Data2
-show*
-Images
-Parameters
+data
+media/*png
+media/*svg
+*.mp4

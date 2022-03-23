@@ -1,6 +1,9 @@
 # Molecular Dynamics Simulation using Lennard-Jones Potential
 
+Check out this [post](https://sofiabelen.github.io/projects/molecular-dynamics.html) for a more detailed description!
+
 ![Alt text](media/simulation.gif?raw=true "simulation")
+<!---
 
 ## Mean Squared Displacement
 ![Alt text](media/diffusion13.svg?raw=true "mean squared displacement")
@@ -11,7 +14,6 @@
 ## Distribution of Velocity Projections (Maxwell Distribution)
 ![Alt text](media/velocities12.svg?raw=true "velocities")
 
-<!---
 ## Energy is Conserved
 ![Alt text](media/energy13.svg?raw=true "energy")
 

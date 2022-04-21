@@ -3,7 +3,7 @@
 g++ main.cpp -o o
 ./o
 # python velocities.py
-# python energy.py
+python energy.py
 # python temperature.py
 # python diffusion.py
 # python energy_fluctuation.py

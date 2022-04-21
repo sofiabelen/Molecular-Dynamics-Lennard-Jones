@@ -7,35 +7,53 @@
 #include <fstream>
 #include <string>
 #include <ios>
+#include <eggx.h>
 
 class Vector {
     public:
+
         int dim;
+
         std::vector<double> coord;
 
+        // 3-dim constructor, all alements are set to 0
         Vector() {
+
             this->dim = 3;
+
             coord.resize(this->dim, 0);
         }
+
+        // n-dim constructor, all alements are set to 0
         Vector(const int &dim) {
+
             this->dim = dim;
+
             coord.resize(dim, 0);
         }
 
+        // n-dim constructor, all alements are set to val
         Vector(const int &dim, const double &val) {
+
             this->dim = dim;
+
             coord.resize(dim, val);
         }
 
+        // 3-dim constructor
         Vector(const int &x, const int &y, const int& z) {
+
             dim = 3;
+
             coord.resize(dim);
+
             coord[0] = x;
             coord[1] = y;
             coord[2] = z;
         }
 
         Vector operator +(const Vector &b) {
+
             Vector sum(this->dim);
 
             for (int i = 0; i < this->dim; i++) {
@@ -45,6 +63,7 @@ class Vector {
         }
 
         Vector operator -(const Vector &b) {
+
             Vector subtr(this->dim);
 
             for (int i = 0; i < this->dim; i++) {
@@ -54,6 +73,7 @@ class Vector {
         }
 
         Vector operator *(const Vector &b) {
+
             Vector dotted(this->dim);
 
             for (int i = 0; i < this->dim; i++) {
@@ -63,6 +83,7 @@ class Vector {
         }
 
         Vector operator *(const double &scalar) {
+
             Vector product(this->dim);
 
             for (int i = 0; i < this->dim; i++) {
@@ -72,6 +93,7 @@ class Vector {
         }
 
         Vector operator /(const double &scalar) {
+
             Vector div(this->dim);
 
             for (int i = 0; i < this->dim; i++) {
@@ -81,6 +103,7 @@ class Vector {
         }
 
         Vector& operator *=(const double &scalar) {
+
             for (int i = 0; i < this->dim; i++) {
                 this->coord[i] *= scalar;
             }
@@ -88,6 +111,7 @@ class Vector {
         }
 
         Vector& operator /=(const double &scalar) {
+
             for (int i = 0; i < this->dim; i++) {
                 this->coord[i] /= scalar;
             }
@@ -116,8 +140,11 @@ class Vector {
             return sum;
         }
 
+        // Apply periodic boundary conditions
         void wrap(const double &size) {
+
             for (int i = 0; i < dim; i++) {
+
                 if (coord[i] < 0) {
                     coord[i] += size;
                 } else if (coord[i] > size) {
@@ -136,25 +163,65 @@ class Vector {
 
 class System {
  public:
-     int n_part, n_step, dim, iteration;
-     double size, halfsize, temperature, kinetic, potential, density;
-     double energy, dt, dt2, mft, mean_energy, velocity_mean;
-     double standard_dev_energy, e_cut, r_cut2;
-     std::vector<Vector> pos, pos_unwrap, vel, acc;
+     /* n_part        : number of particles
+      * n_step        : number of steps
+      * iteration     : current iteration number
+      * size          : size of unit cell in LJ units
+      * halfsize      : half of size
+      * temperature   : temperature in LJ units = 2 * K / dim
+      * kinetic       : kinetic energy K = \sum 1/2 * v**2
+      * potential     : potential energy P = \sum P_i
+      * energy        : total energy E = K + P
+      * dt            : time step
+      * dt2           : time step squared
+      * mft           : mean free time
+      * mean_energy   : mean energy
+      * velocity_mean : mean velocty
+      * standard_dev_energy: energy standard deviation
+      * e_cut         : correction to the potential
+      * r_cut2        : squared cut radius
+      */
+
+     int n_part;
+     int n_step;
+     int dim;
+     int iteration;
+
+     double size;
+     double halfsize;
+     double temperature;
+     double kinetic;
+     double potential;
+     double density;
+     double energy;
+     double dt;
+     double dt2;
+     double mft;
+     double mean_energy;
+     double velocity_mean;
+     double standard_dev_energy;
+     double e_cut;
+     double r_cut2;
+
+     std::vector<Vector> pos;
+     std::vector<Vector> pos_unwrap;
+     std::vector<Vector> vel;
+     std::vector<Vector> acc;
      std::vector<double> total_energy;
 
-     void initPositions(int &u, int k, std::vector<int> d,
-             const int &m, const double &ds) {
-         // std::cout << "u: " << u << " k: " << k << "\nd:\n";
-         // for (int i = 0; i < d.size(); i++) {
-         //     std::cout << d[i] << " ";
-         // }
-         // std::cout << "\n";
+     void initPositions(
+             int &u,
+             int k,
+             std::vector<int> d,
+             const int &m,
+             const double &ds) {
 
          if (u < n_part) {
+
             for (int i = 0; i < dim; i++) {
                  pos[u].coord[i] = ds * static_cast<double>(d[i]);
             }
+
             u++;
 
             for (int j = k; j < dim; j++) {
@@ -172,27 +239,36 @@ class System {
          for(int i = 0; i < m; i++) {
             for(int j = 0; j < m; j++) {
                 for(int k = 0; k < m; k++) {
+
                     pos[u].coord[0] = ds * (i + 0.5);
                     pos[u].coord[1] = ds * (j + 0.5);
-                    pos[u++].coord[2] = ds * (k + 0.5);
+                    pos[u].coord[2] = ds * (k + 0.5);
+
+                    u++;
                 }
             }
          }
      }
 
-     System(const int &n_part, const int &n_step, const int &dim,
-             const double &dt, const double &density,
-             const double &velocity_mean, const double &r_cut2) {
+     System(
+             const int &n_part,
+             const int &n_step,
+             const int &dim,
+             const double &dt,
+             const double &density,
+             const double &velocity_mean,
+             const double &r_cut2) {
+
          iteration = 0;
 
-         this->n_part = n_part;
-         this->n_step = n_step;
-         this->dim = dim;
-         this->density = density;
-         this->dt = dt;
-         this->r_cut2 = r_cut2;
+         this->n_part        = n_part;
+         this->n_step        = n_step;
+         this->dim           = dim;
+         this->density       = density;
+         this->dt            = dt;
+         this->r_cut2        = r_cut2;
          this->velocity_mean = velocity_mean;
-         this->dt2 = dt * dt;
+         this->dt2           = dt * dt;
 
          pos.resize(n_part, Vector(dim));
 
@@ -232,41 +308,50 @@ class System {
              }
          }
 
-         int m = static_cast<int>(pow(static_cast<double>(n_part),
+         // Initialize particles in a grid ----------------------------------
+         int m = static_cast<int>(pow(
+                     static_cast<double>(n_part),
                      1.0 / dim));
 
-         if (static_cast<int>(pow(static_cast<double>(m), dim))
-             < n_part) {
+         if (static_cast<int>(pow(static_cast<double>(m), dim)) < n_part) {
              m++;
          }
-
-         // std::vector<int> d(dim, 0);
-         // int u = 0;
-         // initPositions(u, 0, d, m, size / static_cast<double>(m + 1));
 
          initPositions3d(m, size / static_cast<double>(m));
 
          pos_unwrap = pos;
+         //------------------------------------------------------------------
      }
 
      void calculate_forces() {
+
          // First integration half-step
          for (int i = 0; i < n_part; i++) {
-             pos[i] += vel[i] * dt + acc[i] * (0.5 * dt2);
-             vel[i] += acc[i] * (0.5 * dt);
-             pos_unwrap[i] += vel[i] * dt + acc[i] * (0.5 * dt2);
+
+             Vector dr = vel[i] * dt + acc[i] * (0.5 * dt2);
+
+             pos[i]        += dr;
+             pos_unwrap[i] += dr;
+
+             vel[i]        += acc[i] * (0.5 * dt);
+
              pos[i].wrap(size);
+
+             // acceleration = 0
              acc[i].coord.assign(dim, 0);
          }
 
          potential = 0;
-         kinetic = 0;
+         kinetic   = 0;
+
+         // Forces calculation
          for (int i = 0; i < n_part; i++) {
             for (int j = i + 1; j < n_part; j++) {
+
                 Vector dr = pos[i] - pos[j];
 
-                // Periodic boundary conditions: Apply the minimum image
-	        // convention
+                // Periodic boundary conditions:
+                // Apply the minimum image convention
                 for (int k = 0; k < dim; k++) {
                     if (dr.coord[k] < -halfsize)
                         dr.coord[k] += size;
@@ -277,6 +362,7 @@ class System {
                 double r2 = dr.len_sq();
                 
                 if (r2 < r_cut2) {
+
                     double r6i = 1.0 / (r2 * r2 * r2);
 
                     // 48 * (r_ij^(-13) - 0.5*r_ij^(-7))
@@ -291,9 +377,13 @@ class System {
 
          // Second integration half-step
          for (int i = 0; i < n_part; i ++) {
-             vel[i] += acc[i] * (0.5 * dt);
+
+             vel[i]  += acc[i] * (0.5 * dt);
+
              kinetic += vel[i].len_sq();
+
          }
+
          kinetic *= 0.5;
          iteration++;
      }
@@ -312,8 +402,8 @@ class System {
          standard_dev_energy = 0;
 
          for(int i = 0; i < n_step; i++) {
-             standard_dev_energy += (total_energy[i] - mean_energy)
-                 * (total_energy[i] - mean_energy);
+             double energy_diff = total_energy[i] - mean_energy;
+             standard_dev_energy += energy_diff * energy_diff;
          }
 
          standard_dev_energy /= n_step - 1;
@@ -329,21 +419,6 @@ class System {
          printf("Density: %.1f\n", density);
          std::cout << "velocity_mean: " << velocity_mean << "\n";
          std::cout << "r_cut2: " << r_cut2 << "\n";
-
-         // printf("Positions:\n");
-         // for (int i = 0; i < n_part; i++) {
-         //     pos[i].show();
-         // }
-
-         // printf("\nVelocities:\n");
-         // for (int i = 0; i < n_part; i++) {
-         //     vel[i].show();
-         // }
-         // printf("\nPositions unwrapped:\n");
-         // for (int i = 0; i < n_part; i++) {
-         //     pos_unwrap[i].show();
-         // }
-
          printf("Mean Total Energy: %.1f\n", mean_energy);
          std::cout << "Energy Standard Deviation: "
              << standard_dev_energy << "\n";
@@ -352,29 +427,55 @@ class System {
 };
 
 struct Parameters {
-    int n_sim, n_step, n_stable, n_part, dim;
-    double dt, density, velocity_mean, r_cut2;
+    int n_sim;
+    int n_step;
+    int n_stable;
+    int n_part;
+    int dim;
+
+    double dt;
+    double density;
+    double velocity_mean;
+    double r_cut2;
 };
 
 class Output {
  public:
-     std::ofstream energy, energy_fluctuation, velocities, positions;
-     std::ofstream temperature, mean_free_time, parameters;
+     std::ofstream energy;
+     std::ofstream energy_fluctuation;
+     std::ofstream velocities;
+     std::ofstream positions;
+
+     std::ofstream temperature;
+     std::ofstream mean_free_time;
+     std::ofstream parameters;
+
      std::fstream readme;
 
-     std::string energy_name, energy_fluctuation_name,
-         velocities_name , counter_name,
-         temperature_name, readme_name, mean_free_time_name,
-         positions_name, parameters_name;
+     std::string energy_name;
+     std::string energy_fluctuation_name;
+     std::string velocities_name;
+     std::string counter_name;
+     std::string temperature_name;
+     std::string readme_name;
+     std::string mean_free_time_name;
+     std::string positions_name;
+     std::string parameters_name;
 
      Output(std::ifstream &file_names, const Parameters &param) {
 
-         file_names >> energy_name >> energy_fluctuation_name
-             >> velocities_name >> positions_name
-             >> counter_name >> temperature_name >> readme_name
-             >> mean_free_time_name >> parameters_name;
+         file_names
+             >> energy_name
+             >> energy_fluctuation_name
+             >> velocities_name
+             >> positions_name
+             >> counter_name
+             >> temperature_name
+             >> readme_name
+             >> mean_free_time_name
+             >> parameters_name;
 
-         // Keeping track of experiment number
+         // Keeping track of experiment number ------------------------------
          std::ifstream counter_in(counter_name);
          int exp_count;
          counter_in >> exp_count;
@@ -385,7 +486,7 @@ class Output {
          std::ofstream counter_out(counter_name);
          counter_out << (exp_count + 1);
          counter_out.close();
-         // ----------------------------------
+         // -----------------------------------------------------------------
 
          std::string exp_count_str = std::to_string(exp_count);
 
@@ -406,18 +507,30 @@ class Output {
          }
          velocities << "\n";
 
-        parameters << param.n_sim << "\n" << param.n_step << "\n"
-            << param.n_stable << "\n" << param.n_part << "\n"
-            << param.dim << "\n" << param.dt << "\n"
-            << param.density << "\n" << param.velocity_mean << "\n"
+        parameters
+            << param.n_sim  << "\n"
+            << param.n_step        << "\n"
+            << param.n_stable      << "\n"
+            << param.n_part        << "\n"
+            << param.dim           << "\n"
+            << param.dt            << "\n"
+            << param.density       << "\n"
+            << param.velocity_mean << "\n"
             << param.r_cut2;
 
          readme.open(readme_name, std::ios_base::app);
-         readme << "\nExperiment #" << exp_count << "\n" << param.n_sim
-             << "\n" << param.n_step << "\n" << param.n_stable
-             << "\n" << param.n_part << "\n" << param.dim << "\n"
-             << param.dt << "\n" << param.density << "\n"
-             << param.velocity_mean << "\n" << param.r_cut2 << "\n\n";
+         readme
+             << "\nExperiment #"
+             << exp_count           << "\n"
+             << param.n_sim         << "\n"
+             << param.n_step        << "\n"
+             << param.n_stable      << "\n"
+             << param.n_part        << "\n"
+             << param.dim           << "\n"
+             << param.dt            << "\n"
+             << param.density       << "\n"
+             << param.velocity_mean << "\n"
+             << param.r_cut2        << "\n\n";
          readme.close();
      }
 
@@ -435,27 +548,48 @@ class Output {
      }
 
      void writeResults(const System &sys) {
-         energy << sys.iteration * sys.dt << " " << sys.kinetic
-             << " " << sys.potential << "\n";
 
-         temperature << sys.iteration * sys.dt << " "
-             << sys.temperature << "\n";
+         energy
+             << sys.iteration * sys.dt
+             << " "
+             << sys.kinetic
+             << " "
+             << sys.potential
+             << "\n";
 
-         mean_free_time << sys.iteration * sys.dt << " "
-             << sys.mft << "\n";
+         temperature
+             << sys.iteration * sys.dt
+             << " "
+             << sys.temperature
+             << "\n";
+
+         mean_free_time
+             << sys.iteration * sys.dt
+             << " "
+             << sys.mft
+             << "\n";
      }
 
+     // Writes position and velocities to file
      void writePositions(const System &sys) {
+
          // Changed pos_unwrap -> pos
-         positions << sys.n_part << "\n" << sys.iteration << "\n";
+         positions
+             << sys.n_part
+             << "\n"
+             << sys.iteration
+             << "\n";
+
          for (int i = 0; i < sys.n_part; i++) {
+
              for (int j = 0; j < sys.dim; j++) {
                 positions << sys.pos[i].coord[j] << " ";
              }
-             // Added this
+
              for (int j = 0; j < sys.dim; j++) {
                 positions << sys.vel[i].coord[j] << " ";
              }
+
              positions << "\n";
          }
      }
@@ -474,37 +608,120 @@ class Output {
      }
 };
 
+class GUI {
+    private:
+        int win;
+        int window_length;
+        int border;
+        int wait_time;
+
+        double scale;
+
+        std::string bgdark="#212121";
+        std::string bglight="#B2DFDB";
+        std::string accent="#00BCD4";
+        std::string light="#BDBDBD";
+        std::string primary="#009688";
+        std::string divider="#BDBDBD";
+        std::string darkprimary="#212121";
+
+    public:
+        GUI(int window_length, int border, int wait_time, System sys) {
+
+            this->window_length = window_length;
+            this->border        = border;
+            this->wait_time     = wait_time;
+
+            double volume = pow(double(window_length), 3.0);
+            double mass   = volume * sys.density;
+
+            scale = pow(mass / double(sys.n_part), 1.0 / 3.0);
+
+            win = gopen(
+                    window_length + border * 2,
+                    window_length + border * 2);
+
+            layer(win, 0, 1);
+
+            gsetbgcolor(win, bgdark.c_str());
+        }
+
+        void redraw(System sys) {
+            gclr(win);
+
+            newcolor(win, divider.c_str());
+
+            drawrect(
+                    win,
+                    double(border),
+                    double(border),
+                    double(window_length),
+                    double(window_length));
+
+            newcolor(win, primary.c_str());
+
+            for(int i=0; i < sys.n_part; i++) {
+                // Projection of the particle position onto a 2d plane
+                fillcirc(
+                        win,
+                        sys.pos[i].coord[0] * scale + double(border),
+                        sys.pos[i].coord[1] * scale + double(border),
+                        5.0,
+                        5.0);
+            }
+
+            copylayer(win, 1, 0);
+
+            if(wait_time)
+                msleep(wait_time);
+        }
+
+        void close() {
+            // Get keyboard input from user and close the window
+            ggetch();
+            gclose(win);
+        }
+};
+
 int main(int argc, char** argv) {
+
     Parameters param;
 
     std::ifstream input("Parameters"), file_names("FileNames");
-    input >> param.n_sim >> param.n_step >> param.n_stable
-        >> param.n_part >> param.dim >> param.dt >> param.density
-        >> param.velocity_mean >> param.r_cut2;
+
+    input >> param.n_sim
+        >> param.n_step
+        >> param.n_stable
+        >> param.n_part
+        >> param.dim
+        >> param.dt
+        >> param.density
+        >> param.velocity_mean
+        >> param.r_cut2;
 
     Output output(file_names, param);
 
-    double dtstart_power = -4;
-    double dtend_power = -2;
-    double total_run_time = param.n_step * 0.001;
+    int window_length = 600;
+    int border        = 50;
+    int wait_time     = 20;
 
     for (int k = 0; k < param.n_sim; k++) {
+
         printf("Simulation #%d\n", k);
 
-        // Changing dt
-        double dt = pow(10, dtstart_power + (dtend_power - dtstart_power)
-                * k / param.n_sim);
-        System sys(param.n_part,
-                static_cast<int>(round(total_run_time / dt)),
-                param.dim, dt, param.density, param.velocity_mean,
+        System sys(
+                param.n_part,
+                param.n_step,
+                param.dim,
+                param.dt,
+                param.density,
+                param.velocity_mean,
                 param.r_cut2);
-        param.n_step = total_run_time / dt;
 
-        // System sys(param.n_part, param.n_step,
-        //         param.dim, param.dt, param.density, param.velocity_mean,
-        //         param.r_cut2);
+        GUI gui(window_length, border, wait_time, sys);
 
         for (int i = 0; i < param.n_step; i++) {
+
             if (i == param.n_stable) {
                 for (int j = 0; j < param.n_part; j++) {
                     sys.pos_unwrap[j] = sys.pos[j];
@@ -517,13 +734,18 @@ int main(int argc, char** argv) {
                 output.writeVelocities(sys);
             }
 
+            gui.redraw(sys);
+
             sys.calculate_forces();
             sys.calculations();
-            // output.writeResults(sys);
+            output.writeResults(sys);
         }
+
         sys.calculateEnergyFluctuation();
         output.writeEnergyFluctuation(sys);
         sys.show();
+
+        gui.close();
     }
 
     output.finalize();

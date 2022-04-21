@@ -28,3 +28,5 @@ ax.set_xlim(left=0)
 fig.set_size_inches(8, 6)
 fig.savefig("media/energy" + str(counter) + ".png")
 fig.savefig("media/energy" + str(counter) + ".svg")
+
+plt.show()
